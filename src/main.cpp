@@ -25,7 +25,7 @@
 #include "atom.h"
 #include "common.h"
 
-
+#include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
@@ -157,16 +157,6 @@ int recovery(const char * baseDirectory, const char * donorName, const char * na
         cerr << e << '\n';
         return 1;
     }
-
-//    try {
-//        mp4.open(donorName);
-//        mp4.repair(fileName.c_str());
-//        mp4.saveVideo(tempFilename.c_str());
-//    } catch(string e) {
-//        cerr << e << endl;
-//        return -1;
-//    }
-
 
     rename(tempFilename.c_str(), fileName.c_str());
     // rename dir
