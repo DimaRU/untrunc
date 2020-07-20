@@ -1,0 +1,3 @@
+#!/bin/bash
+strip untrunc
+zip untrunc donor.mp4 untrunc
