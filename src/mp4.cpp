@@ -1361,7 +1361,7 @@ start:
 	uint begin = *(uint*)start;
 
 	static uint loop_cnt = 0;
-	if (g_log_mode == I && loop_cnt++ % 2000 == 0) outProgress(offset, current_mdat_->file_end_);
+	if (g_log_mode == I && loop_cnt++ % 200 == 0) outProgress(offset, current_mdat_->file_end_, "Check:");
 
 	auto shouldKeepZeros = [&]() {
 		if (g_use_chunk_stats) {

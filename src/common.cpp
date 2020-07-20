@@ -195,9 +195,15 @@ void hitEnterToContinue(bool new_line) {
 }
 
 void outProgress(double now, double all, const string& prefix) {
-	double x = round(1000*(now/all));
-	if (g_onProgress) g_onProgress(x/10);
-	else cout << prefix << x/10 << "%  \r" << flush;
+    static int lastProgress = 0;
+    double progress = int(round(now * 100 / all));
+    if (progress == lastProgress) { return; }
+    lastProgress = progress;
+    
+	if (g_onProgress)
+        g_onProgress(progress);
+	else
+        cout << prefix << progress << "%\r" << flush;
 }
 
 void mute() {

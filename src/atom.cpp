@@ -106,7 +106,7 @@ off_t Atom::findNextAtomOff(FileRead& file, const Atom* start_atom, bool searchi
 
 	for (off_t off_start=start_atom->contentStart(), off=off_start; off < file.length();) {
 		auto buff = file.getPtrAt(off, 4);
-		if (g_log_mode == LogMode::I && off % (1<<16) == 0 && off > off_start) outProgress(off, file.length());
+		if (g_log_mode == LogMode::I && off % (1<<16) == 0 && off > off_start) outProgress(off, file.length(), "Find atom:");
 		if (!isdigit(*buff) && !islower(*buff) && !isspace(*buff)) {off += 4; continue;}
 		for (int i=3; i >= 0; --i)
 			if (isValidAtomName(buff-i)) return off-4-i;
@@ -453,11 +453,9 @@ void BufferedAtom::write(FileWrite &output, bool force_64) {
 	}
 
 	off_t offset = 0;
-	int loop_cnt = 0;
 	while (offset < contentSize()) {
-		if (name_ == "mdat" && g_log_mode == I && loop_cnt++ >= 10) {
-			outProgress(offset, contentSize());
-			loop_cnt = 0;
+		if (name_ == "mdat" && g_log_mode == I) {
+			outProgress(offset, contentSize(), "Save:");
 		}
 		int toread = file_read_.buf_size_;
 		if (offset + toread > contentSize()) toread = contentSize() - offset;
