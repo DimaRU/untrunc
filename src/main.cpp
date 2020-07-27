@@ -46,6 +46,7 @@ int main(int argc, const char * argv[]) {
 
     if (argc < 3) return EXIT_FAILURE;
     
+    std::cout << "Version:2\n";
     if (strcmp(argv[1], "list") == 0) {
         return listCommand(argv[2]);
     } else if (strcmp(argv[1], "recovery") == 0) {
@@ -53,46 +54,6 @@ int main(int argc, const char * argv[]) {
     } else {
         return EXIT_FAILURE;
     }
-}
-
-int recoveryCommand(const char * donorName, const char * directoryName) {
-    struct dirent *ent;
-    int totalFiles = 0;
-    int currentCount = 0;
-
-    auto dir = opendir(directoryName);
-    if (dir == NULL) {
-        std::cout << "Fail to open " << directoryName << std::endl;
-        perror ("");
-        return EXIT_FAILURE;
-    }
-    
-    while ((ent = readdir (dir)) != NULL) {
-        if (ent->d_type != DT_DIR) continue;
-        if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0 || ent->d_name[0] != '.') continue;
-        totalFiles++;
-    }
-    closedir (dir);
-
-    dir = opendir(directoryName);
-    if (dir == NULL) {
-        std::cout << "Fail to open " << directoryName << std::endl;
-        perror ("");
-        return EXIT_FAILURE;
-    }
-    
-    while ((ent = readdir (dir)) != NULL) {
-        if (ent->d_type != DT_DIR) continue;
-        if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0 || ent->d_name[0] != '.') continue;
-        currentCount++;
-        std::cout << "Count:" << currentCount << "/" << totalFiles << std::endl << std::flush;
-        std::clog << "Recovery: " << ent->d_name << std::endl;
-        recovery(directoryName, donorName, ent->d_name);
-    }
-    closedir (dir);
-
-
-    return 0;
 }
 
 int listCommand(const char * directoryName) {
@@ -128,7 +89,7 @@ int listCommand(const char * directoryName) {
         freeSpace = vfs.f_bavail * vfs.f_bsize;
         
         fileCount++;
-        std::cout << "File:" << filename << ":" << stat_buf.st_size << std::endl;
+        std::cout << "Entry:" << std::string(directoryName) + "/" + std::string(ent->d_name) << ":" << stat_buf.st_size << std::endl;
     }
     
     closedir (dir);
@@ -136,8 +97,8 @@ int listCommand(const char * directoryName) {
     return 0;
 }
 
-int recovery(const char * baseDirectory, const char * donorName, const char * name) {
-    auto fileName = std::string(baseDirectory) + "/" + std::string(name) + "/0.mp4";
+int recoveryCommand(const char * donorName, const char * directoryName) {
+    auto fileName = std::string(directoryName) + "/0.mp4";
     string tempFilename;
     // recovery
 
@@ -158,10 +119,18 @@ int recovery(const char * baseDirectory, const char * donorName, const char * na
         return 1;
     }
 
-    rename(tempFilename.c_str(), fileName.c_str());
+    if (rename(tempFilename.c_str(), fileName.c_str()) != 0) {
+        perror(fileName.c_str());
+        return 1;
+    }
     // rename dir
-    auto sourceDirectory = std::string(baseDirectory) + "/" + std::string(name);
-    auto newDirectory = std::string(baseDirectory) + "/" + std::string(name).erase(0, 1);
-    rename(sourceDirectory.c_str(), newDirectory.c_str());
+    auto pos = std::string(directoryName).find_last_of('.');
+    auto newDirectory = std::string(directoryName).erase(pos, 1);
+    cout << newDirectory << endl;
+    
+    if (rename(directoryName, newDirectory.c_str()) != 0) {
+        perror(newDirectory.c_str());
+        return 1;
+    }
     return 0;
 }
